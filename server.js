@@ -1,5 +1,8 @@
 import express from "express";
 import cors from "cors";
+import momaArtists from "./momaArtists.json"
+
+console.log(momaArtists.length);
 
 // If you're using one of our datasets, uncomment the appropriate import below
 // to get started!
@@ -14,15 +17,46 @@ import cors from "cors";
 // PORT=9000 npm start
 const port = process.env.PORT || 8080;
 const app = express();
+const listEndpoints = require('express-list-endpoints')
 
-// Add middlewares to enable cors and json body parsing
+// Add middlewares to enable cors 
 app.use(cors());
 app.use(express.json());
 
 // Start defining your routes here
 app.get("/", (req, res) => {
-  res.send("Hello Technigo!");
+  res.json(listEndpoints(app));
 });
+
+// show all artists
+app.get("/artists", (req, res) => {
+  res.json(momaArtists)
+});
+
+// show one artist
+app.get("/artists/:artistId", (req, res) => {
+  const artistId = req.params.artistId
+  const artist = momaArtists.find((artist) => artist.ConstituentID === +artistId)
+  // console.log("artisId:", artistId, typeof artistId); --> show what data type it is
+  if (artist) {
+    res.json(artist)
+  } else {
+    res.status(404).send("no artist boooo")
+  }
+})
+
+// show nationality filtering the nationality
+app.get("/gender/:gender", (req, res) => {
+  const genderFm = req.params.gender
+  const showNationality = req.query.nationality
+  let genderMf = momaArtists.filter((gender) => gender.Gender === genderFm) 
+
+  if (showNationality) {
+    genderMf = genderMf.filter((person) => person.nationality)
+  }
+
+  res.json(genderMf)
+})
 
 // Start the server
 app.listen(port, () => {
